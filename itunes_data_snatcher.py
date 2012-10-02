@@ -63,13 +63,20 @@ itunesdata = xml_to_dict(filename, get_unique_keys(filename, 'dict/dict/key'), '
 sample = {1851: {'Album': 'Velvet Goldmine', 'Skip Date': '2007-06-22T22:13:08Z', 'Persistent ID': '92D3C8B8E9F4818C', 'Location': 'file://localhost/Users/rebeccaliss/Music/iTunes/iTunes%20Music/Grant%20Lee%20Buffalo/Velvet%20Goldmine/The%20Whole%20Shebang.mp3', 'File Folder Count': 4, 'Total Time': 251820, 'Play Date UTC': '2012-07-10T23:23:22Z', 'Sample Rate': 44100, 'Genre': 'Soundtrack', 'Bit Rate': 128, 'Sort Name': 'Whole Shebang ', 'Play Count': 20, 'Kind': 'MPEG audio file', 'Name': 'The Whole Shebang ', 'Artist': 'Grant Lee Buffalo', 'Date Added': '2007-01-25T01:07:17Z', 'Artwork Count': 1, 'Play Date': 3424793002L, 'Date Modified': '2005-03-30T23:55:45Z', 'Library Folder Count': 1, 'Skip Count': 1, 'Track ID': 3167, 'Size': 4190919, 'Track Type': 'File'}, 1853: {'Album': 'Garden State', 'Persistent ID': '92D3C8B8E9F4818F', 'Track Number': 12, 'Track Type': 'File', 'File Folder Count': 4, 'Disc Number': 1, 'Total Time': 252794, 'Play Date UTC': '2010-10-06T21:08:11Z', 'Compilation': None, 'Sample Rate': 44100, 'Track Count': 13, 'Genre': 'Soundtrack', 'Bit Rate': 128, 'Play Count': 8, 'Kind': 'AAC audio file', 'Name': 'Let Go', 'Artist': 'Frou Frou', 'Disc Count': 1, 'Date Added': '2007-01-25T01:07:18Z', 'Play Date': 3369229691L, 'Location': 'file://localhost/Users/rebeccaliss/Music/iTunes/iTunes%20Music/Compilations/Garden%20State/12%20Let%20Go.m4a', 'Date Modified': '2005-11-05T02:59:41Z', 'Library Folder Count': 1, 'Composer': 'Garden State', 'Year': 2004, 'Track ID': 3169, 'Size': 4075991}}
 
 def match_criteria(dictionary, key, value, operator):
-    assert operator == ('==' or '>' or '>=' or '<' or '<=')
+    assert operator == '==' or '>' or '>=' or '<' or '<='
     for unique_id, dict in dictionary.iteritems():
-        eval_string = '"{0}" {1} "{2}"'.format(dict[key], operator, value)
-        if eval(eval_string):
-            print dict
+        if key in dict:
+            if isinstance(value, int):
+                eval_string = '{0} {1} {2}'.format(dict[key], operator, value)
+                if eval(eval_string):
+                    yield dict['Name']
+            else:
+                eval_string = '"{0}" {1} "{2}"'.format(dict[key], operator, value)
+                if eval(eval_string):
+                    yield dict['Name']
 
-match_criteria(sample, 'Genre', 'Soundtrack', '==')
+for dict in match_criteria(itunesdata, 'Skip Count', 20, '>='):
+    print dict
 
                         
 
