@@ -1,7 +1,7 @@
 from lxml import etree
 
 # 1. Find itunes data
-username = "rebeccaliss"  # Change this to reflect your username!
+username = ""  # Change this to reflect your username!
 filename = "/Users/%s/Music/iTunes/iTunes Music Library.xml" % (username)
 test_filename = "test_xml.xml"
 
@@ -20,7 +20,7 @@ def get_unique_keys(xml_file, outer_xml_string):
         
 def singlexml_to_dict(single_xml_dict):
     "Takes a single nested xml dictionary and returns the keys and values as a new python dictionary"
-    "E.g. {Track: 'Song', Length: '2.3'}"
+    "E.g. <dict><key>Track</key><string>Song</string>...</dict> --> {Track: 'Song', Length: '2.3'}"
     
     keys = []
     values = []
