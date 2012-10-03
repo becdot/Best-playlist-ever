@@ -1,7 +1,9 @@
 from lxml import etree
 
+import environment # Contains environment-specific information, may comment out
+
 # 1. Find itunes data
-username = ""  # Change this to reflect your username!
+username = environment.username  # Change this to reflect your username!
 filename = "/Users/%s/Music/iTunes/iTunes Music Library.xml" % (username)
 test_filename = "test_xml.xml"
 
@@ -56,7 +58,7 @@ def xml_to_dict (xml_file, unique_dict, inner_xml_string):
         unique_dict[key] = kvdict_list[i]
     return unique_dict    
              
-itunesdata = xml_to_dict(filename, get_unique_keys(filename, 'dict/dict/key'), 'dict/dict/dict')    
+###itunesdata = xml_to_dict(filename, get_unique_keys(filename, 'dict/dict/key'), 'dict/dict/dict')    
 
 # 3. Throw out uninteresting songs
 
@@ -75,8 +77,8 @@ def match_criteria(dictionary, key, value, operator):
                 if eval(eval_string):
                     yield dict['Name']
 
-for dict in match_criteria(itunesdata, 'Skip Count', 20, '>='):
-    print dict
+###for dict in match_criteria(itunesdata, 'Skip Count', 20, '>='):
+    ###print dict
 
                         
 
