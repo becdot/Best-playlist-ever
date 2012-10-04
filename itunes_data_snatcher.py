@@ -46,19 +46,52 @@ def defaultkeys(list_of_keys):
         defaultdict[key] = None
     return defaultdict
     
-# 4. Create a Song class
+# 4. Create a parent class of Song, SongDB
+
+class SongDB:
+    "Contains a list of Song instances, and provides methods for sorting and filtering by Song attribtes"
+    
+    def __init__(self):
+        self.songs = [song for song in buildsongs("itunes_sample.xml", 'dict/dict/dict')]
+        self.keys = easykeys(get_unique_keys("itunes_sample.xml", 'dict/dict/dict'))
+        for key in self.keys:
+            setattr(self, key, fill_key_dicts(key, self.songs))
+                    
+                    
+                    
+                            
+def fill_key_dicts(key, song_list):
+    "Takes a key and a list of Song instances and returns {song.key : [Song1, Song2, Song3]}"
+    key_dict = {} # -> key = artist
+    for song in song_list: # -> for song in ['song1', 'song2', 'song3']
+        if getattr(song, key):
+            u_songdotkey = getattr(song, key).encode('ascii', 'ignore')
+            songdotkey = u_songdotkey.decode('ascii', 'ignore')
+            if u_songdotkey not in key_dict: # -> if song.artist(='Bach') not in key_dict
+                key_dict[u_songdotkey] = [] # -> key_dict['Bach'] = []
+                key_dict[songdotkey].append(song) # -> key_dict['Bach'] = [song1]
+            else:
+                key_dict[songdotkey].append(song)
+    return key_dict
                 
-class Song:
-    "A class for itunes songs, with track name, artist, album, play count, etc data"
+            
+    
+    
+    
+# 5. Create a Song class
+                
+class Song(SongDB):
+    """A class for itunes songs, with track name, artist, album, play count, etc data
+       Child class of SongDB"""
     
     def __init__(self, song_dict):
         for key, value in song_dict.iteritems():
             setattr(self, key, value)
             
     def __str__(self):
-        return "{name} by {artist} in album {album}".format(name=self.name, artist=self.artist, album=self.album)
-
-# 5. Create and populate song instances
+        return "{name} by {artist} in album {album}".format(name=self.name, artist=self.artist, album=self.album)        
+        
+# 6. Create and populate song instances
 
 def buildsong(xml_song_dict, defaultdict):
     "Returns a python dictionary populated with data from a single xml dictionary, with default values for any missing keys"
@@ -72,13 +105,22 @@ def buildsong(xml_song_dict, defaultdict):
     return dict(defaultdict.items() + songdict.items())
         
 def buildsongs(filename, xpath_string):
-    "Yields populated Song instances (filled with both filled and default values)"
+    "A generator that yields populated Song instances (filled with both filled and default values)"
     defaultdict = defaultkeys(easykeys(get_unique_keys(filename, xpath_string)))        
     return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
-     
-for song in buildsongs(filename, 'dict/dict/dict'): print song
-    
-  
+         
+
+container = SongDB()
+#print container.track_id
+for key in container.keys: 
+    for k, v in getattr(container, key).iteritems():
+        for instance in v:
+            print key, 'for', getattr(instance, 'name'), 'is', getattr(instance , key)
+#for value in fill_key_dicts('album', container.songs).values():
+#    for instance in value:
+#        print instance
+#print fill_key_dicts('album', container.songs)
+
                         
 
 
