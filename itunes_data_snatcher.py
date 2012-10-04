@@ -62,9 +62,13 @@ class Song:
 
 def buildsong(xml_song_dict, defaultdict):
     "Returns a python dictionary populated with data from a single xml dictionary, with default values for any missing keys"
+    "Also encodes incoming data into unicode, and then decodes it into ascii when returning"
     songdict = {}
     for node in xml_song_dict.xpath('key'):
-        songdict[formatkey(node.text)] = node.getnext().text
+        text_node = (node.text).encode('ascii', 'ignore')
+        if node.getnext().text:
+            next_text_node = (node.getnext().text).encode('ascii', 'ignore')
+        songdict[formatkey(text_node.decode())] = next_text_node.decode()
     return dict(defaultdict.items() + songdict.items())
         
 def buildsongs(filename, xpath_string):
@@ -72,7 +76,7 @@ def buildsongs(filename, xpath_string):
     defaultdict = defaultkeys(easykeys(get_unique_keys(filename, xpath_string)))        
     return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
      
-for song in buildsongs('itunes_sample.xml', 'dict/dict/dict'): print song
+for song in buildsongs(filename, 'dict/dict/dict'): print song
     
   
                         
