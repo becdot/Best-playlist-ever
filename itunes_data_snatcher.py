@@ -51,14 +51,21 @@ def defaultkeys(list_of_keys):
 class SongDB:
     "Contains a list of Song instances, and provides methods for sorting and filtering by Song attribtes"
     
-    def __init__(self):
-        self.songs = [song for song in buildsongs("itunes_sample.xml", 'dict/dict/dict')]
-        self.keys = easykeys(get_unique_keys("itunes_sample.xml", 'dict/dict/dict'))
+    def __init__(self, filename, xpath_string):
+        self.songs = [song for song in buildsongs(filename, xpath_string)]
+        self.keys = easykeys(get_unique_keys(filename, xpath_string))
         for key in self.keys:
-            setattr(self, key, fill_key_dicts(key, self.songs))
-                    
-                    
-                    
+            setattr(self, key, fill_key_dicts(key, self.songs))  
+            
+    def filter_by_key(self, key, search_term):
+        assert (key.lower() in self.keys), "Your key does not exist"
+        if isinstance(search_term, str): assert ((search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()) \
+               in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
+        # Need to check whether search_term is type int or str, as appropriate
+        # Need to make sure that when data is imported, integers are imported as strings
+        return (getattr(self, key))[search_term]
+        
+               
                             
 def fill_key_dicts(key, song_list):
     "Takes a key and a list of Song instances and returns {song.key : [Song1, Song2, Song3]}"
@@ -73,10 +80,7 @@ def fill_key_dicts(key, song_list):
             else:
                 key_dict[songdotkey].append(song)
     return key_dict
-                
-            
-    
-    
+                    
     
 # 5. Create a Song class
                 
@@ -110,12 +114,16 @@ def buildsongs(filename, xpath_string):
     return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
          
 
-container = SongDB()
-#print container.track_id
-for key in container.keys: 
-    for k, v in getattr(container, key).iteritems():
-        for instance in v:
-            print key, 'for', getattr(instance, 'name'), 'is', getattr(instance , key)
+container = SongDB("itunes_sample.xml", 'dict/dict/dict')
+
+
+container.filter_by_key('play_count', '5')
+
+#for key in container.keys:
+#    for k, v in getattr(container, key).iteritems():
+#        for instance in v:
+#            print key, 'for', getattr(instance, 'name'), 'is', getattr(instance, key)
+
 #for value in fill_key_dicts('album', container.songs).values():
 #    for instance in value:
 #        print instance
