@@ -22,32 +22,44 @@ def get_unique_keys(filename, xpath_string):
                                     if i % 4 == 0 or i % 4 == 2)
     return keys
     
+def formatkey(key):
+    if len(key.split()) > 1:
+        return "{0}_{1}".format(*(key.lower()).split())
+    else:
+        return key.lower()
+    
 def easykeys(list_of_keys):
-    return ["{0}_{1}".format(*(key.lower()).split()) for key in list_of_keys if len(key.split()) > 1 else key.lower()]
-for key in list_of_keys:
-        return     
+    return [formatkey(key) for key in list_of_keys]
                 
-print get_unique_keys(filename, 'dict/dict/dict')
-
-
-tree = etree.parse(test_filename)
-inner_dicts = tree.xpath('/dict/dict')
-for dict in inner_dicts:
-    for node in dict.xpath('key'):
-        #print 'Current:', node.text
-        #print 'Next:', node.getnext().text
-        pass
-        
-        
+def defaultkeys(list_of_keys):
+    #return {key:None for key in list_of_keys} Need Python 2.7!
+    defaultdict = {}
+    for key in list_of_keys:
+        defaultdict[key] = None
+    return defaultdict
+                
 class Song:
-    def __init__(self):
-        for key in my_list:
-            setattr(self, key, '')
+    def __init__(self, song_dict):
+        for key, value in song_dict.iteritems():
+            setattr(self, key, value)
+            
+    def __str__(self):
+        return "{name} by {artist} in album {album}".format(name=self.name, artist=self.artist, album=self.album)
 
-
-
-
-
+def buildsong(song_dict, defaultdict):
+    songdict = {}
+    for node in song_dict.xpath('key'):
+        songdict[formatkey(node.text)] = node.getnext().text
+    return dict(defaultdict.items() + songdict.items())
+        
+def buildsongs(filename, xpath_string):
+    defaultdict = defaultkeys(easykeys(get_unique_keys(filename, xpath_string)))        
+    return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
+    
+    
+for song in buildsongs('itunes_sample.xml', 'dict/dict/dict'): print song
+    
+   
 
                         
 
