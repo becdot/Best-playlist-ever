@@ -1,6 +1,8 @@
 /ve
+*.pyc
 
 test_xml.xml
+itunes_sample.xml
 
 environment.pyc
 environment.py
