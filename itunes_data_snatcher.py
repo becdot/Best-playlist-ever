@@ -19,64 +19,70 @@ def get_unique_keys(filename, xpath_string):
     "Creates a set of unique keys (e.g. ['Name', 'Play Count']) from a nested xml dictionary"               
     keys = set(kvpairs.text for dict in xml_dict_generator(filename, xpath_string) for i, kvpairs in enumerate(dict) if i % 4 == 0 or i % 4 == 2)
     return keys
+    
+def easykeys(list_of_keys):
+    return ["{0}_{1}".format(*(key.lower()).split()) for key in list_of_keys if len(key.split()) > 1 else key.lower()]
+for key in list_of_keys:
+        return     
                 
-#print get_unique_keys(filename, 'dict/dict/dict')
+print get_unique_keys(filename, 'dict/dict/dict')
 
 
 tree = etree.parse(test_filename)
 inner_dicts = tree.xpath('/dict/dict')
 for dict in inner_dicts:
     for node in dict.xpath('key'):
-        print 'Current:', node.text
-        print 'Next:', node.getnext().text
+        #print 'Current:', node.text
+        #print 'Next:', node.getnext().text
+        pass
         
         
->>> class Song:
-...   def __init__(self):
-...     for key in my_list:
-...       setattr(self, key, '')
-
-
-
-
 class Song:
     def __init__(self):
-        self.name = ''
-        self.artist = ''
-        self.album = ''
-        self.playdate = '01/01/1900'
-        self.playcount = 0
-        self.skipcount = 0
-        self.rating = 0
-        self.age = 0
-        
-        
-            
-def create_songs(filename, xpath_string):
-    song_list = []
-    for dict in xml_dict_generator(filename, xpath_string):
-        new_song = Song()
-        for i, key in enumerate(dict):
-            key = key.text
-            if key == 'Name':
-                new_song.name = key
-            elif key == 'Artist':
-                new_song.artist = key
-            elif key == 'Album':
-                new_song.album = key
-            elif key == "Play Date UTC":
-                new_song.playdate = key[:10]
-            elif key == 'Play Count':
-                new_song.playcount = key
-            elif key == 'Skip Count':
-                new_song.skipcount = key
-            elif key == 'Rating':
-                new_song.rating = key
-            elif key == 'Age':
-                new_song.age = key
-        song_list.append(new_song)
-    return song_list
-            
+        for key in my_list:
+            setattr(self, key, '')
+
+
+
+
+#class Song:
+#    def __init__(self):
+#        self.name = ''
+#        self.artist = ''
+#        self.album = ''
+#        self.playdate = '01/01/1900'
+#        self.playcount = 0
+#        self.skipcount = 0
+#        self.rating = 0
+#        self.age = 0
+#        
+#        
+#            
+#def create_songs(filename, xpath_string):
+#    song_list = []
+#    for dict in xml_dict_generator(filename, xpath_string):
+#        new_song = Song()
+#        for i, key in enumerate(dict):
+#            key = key.text
+#            if key == 'Name':
+#                new_song.name = key
+#            elif key == 'Artist':
+#                new_song.artist = key
+#            elif key == 'Album':
+#                new_song.album = key
+#            elif key == "Play Date UTC":
+#                new_song.playdate = key[:10]
+#            elif key == 'Play Count':
+#                new_song.playcount = key
+#            elif key == 'Skip Count':
+#                new_song.skipcount = key
+#            elif key == 'Rating':
+#                new_song.rating = key
+#            elif key == 'Age':
+#                new_song.age = key
+#        song_list.append(new_song)
+#    return song_list
+#            
 
 #create_songs(test_filename, '/dict/dict')            
 #for song in create_songs(test_filename, '/dict/dict'): print song.name, song.age, 'line break'
