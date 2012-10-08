@@ -57,6 +57,23 @@ class SongDB:
         for key in self.keys:
             setattr(self, key, fill_key_dicts(key, self.songs))  
             
+            
+    def keys_as_types(self, filename, xpath_string, str_or_int):
+        "Returns a list of keys that have either string or integer values, depending on input"
+        
+        "E.g. ['album', 'artist', 'file_location'] -> string values, ['play_count', 'skip_count'] -> int values"
+    
+        assert (str_or_int == int or str_or_int == str), 'The value must be either str or int'
+        
+        keys_and_types = set((key, type(getattr(instance, key)))
+                          for key in self.keys
+                            for k, v in getattr(self, key).iteritems()
+                               for instance in v)
+        return [pair[0] 
+                for pair in keys_and_types
+                if pair[1] == str_or_int]
+
+            
     def filter_by_key(self, key, search_term):
         assert (key.lower() in self.keys), "Your key does not exist"
         if isinstance(search_term, str): assert ((search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()) \
@@ -121,23 +138,16 @@ def buildsongs(filename, xpath_string):
          
 
 container = SongDB(filename, 'dict/dict/dict')
+print container.keys_as_types(filename, 'dict/dict/dict', int)
 
 #container.filter_by_key('play_count', 5)
 
-things = []
-for key in container.keys:
-    for k, v in getattr(container, key).iteritems():
-        for instance in v:
-            things.append((key, type(getattr(instance, key))))
-for i in set(things):
-    print i
-            
-strong_keys = ['album', 'skip_date',]
 
-#for value in fill_key_dicts('album', container.songs).values():
-#    for instance in value:
-#        print instance
-#print fill_key_dicts('album', container.songs)
+#for key in container.keys:
+#    for k, v in getattr(container, key).iteritems():
+#        for instance in v:
+#            print key, instance
+
 
                         
 

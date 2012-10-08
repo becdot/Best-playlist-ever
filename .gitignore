@@ -4,4 +4,7 @@
 test_xml.xml
 itunes_sample.xml
 
+list_of_keys.py
+match_criteria.py
+
 environment.py
