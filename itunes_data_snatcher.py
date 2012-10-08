@@ -1,4 +1,5 @@
 from lxml import etree
+import operator
 # Contains environment-specific information, may comment out
 import environment 
 
@@ -29,7 +30,7 @@ def formatkey(key):
     "Returns a lowercase version of a key, separated by an underscore, e.g. 'Track Name' -> 'track_name'"
        
     if len(key.split()) > 1:
-        return "{0}_{1}".format(*(key.lower()).split())
+        return '_'.join(key.split()).lower()
     else:
         return key.lower()
     
@@ -46,7 +47,7 @@ def defaultkeys(list_of_keys):
     for key in list_of_keys:
         defaultdict[key] = None
     return defaultdict
-    
+        
 # 4. Create a parent class of Song, SongDB
 
 class SongDB:
@@ -69,6 +70,7 @@ class SongDB:
                           for key in self.keys
                             for k, v in getattr(self, key).iteritems()
                                for instance in v)
+                        
         return [pair[0] for pair in keys_and_types if pair[1] == str_or_int]
         
     def fill_key_dicts(self, key, song_list):
@@ -82,21 +84,41 @@ class SongDB:
                 else:
                     key_dict[getattr(song, key)].append(song)
         return key_dict
-            
-    def filter_by_key(self, key, search_term):
-        "Returns a list of song instances that match the search term."
+           
         
+    def match_criteria(self, key, value, input_operator):
+        "Returns a list of song instances that match the given criteria and operator (eg artist == 'Bach' or play_count >= 20)"
+    
+        operator_dict = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '>': operator.gt, '<=': operator.le, '<': operator.lt}
+        input_operator = operator_dict[input_operator]
         key = key.lower()
         assert (key in self.keys), "Your key does not exist"
-        assert (key in self.keys_as_types(type(search_term))), "Your search term must be of the appropriate type"
-        if isinstance(search_term, str): 
-            assert (search_term or search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()
-                    in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
-        if isinstance(search_term, int): 
-            assert search_term in getattr(self, key).keys(), "Your search term was not found. Please check the spelling and try again."
-         
-        return (getattr(self, key))[search_term]
+        assert (key in self.keys_as_types(type(value))), "Your search term must be of the appropriate type"
+        if isinstance(value, str): 
+            assert (value in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
+                
+        def compare_funct(song_inst):
+            if input_operator(getattr(song_inst, key), value):
+                return True
+            return False
+        return compare_funct
         
+                                
+                                
+                                
+                                
+    def sort_function(self, function):
+        return [song for song in self.songs if function(song)]
+        
+                
+                                
+
+    
+def filter_by_fav(song_inst):
+    if song_inst.play_count >= 100 and song_inst.skip_count < 10:
+        return True
+    return False       
+                                   
                     
     
 # 5. Create a Song class
@@ -141,9 +163,9 @@ def buildsongs(filename, xpath_string):
 
 # ** Testing **
 container = SongDB(filename, 'dict/dict/dict')
-#print container.keys_as_types(filename, 'dict/dict/dict', int)
 
-for instance in container.filter_by_key('Artist', 'Bach'): print instance
+criteria = container.match_criteria('play_count', 200, '>=')
+for instance in container.sort_function(criteria): print instance
 
 #for key in container.keys:
 #    for k, v in getattr(container, key).iteritems():
