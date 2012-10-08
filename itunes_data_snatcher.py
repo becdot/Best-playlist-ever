@@ -15,19 +15,18 @@ def xml_dict_generator(filename, xpath_string):
     inner_dict = tree.xpath(xpath_string)
     for dict in inner_dict: yield dict
     
-### Might want to change so that this function does not use the mod operater
 def get_unique_keys(filename, xpath_string):
     "Creates a set of unique keys (e.g. ['Name', 'Play Count']) from a nested xml dictionary"               
-    keys = set(kvpairs.text for dict in xml_dict_generator(filename, xpath_string) 
-                                for i, kvpairs in enumerate(dict) 
-                                    if i % 4 == 0 or i % 4 == 2)
+
+    keys = set(node.text
+            for dict in xml_dict_generator(filename, xpath_string)
+                for node in dict.xpath('key'))
     return keys
-    
+                
 # 3. Format data
     
 def formatkey(key):
-    """Returns a lowercase version of a key, separated by an underscore
-       e.g. 'Track Name' -> 'track_name'"""
+    "Returns a lowercase version of a key, separated by an underscore, e.g. 'Track Name' -> 'track_name'"
        
     if len(key.split()) > 1:
         return "{0}_{1}".format(*(key.lower()).split())
@@ -36,11 +35,13 @@ def formatkey(key):
     
 def easykeys(list_of_keys):
     "Returns a list of formatted keys ('Track Name' -> 'track_name')"
+    
     return [formatkey(key) for key in list_of_keys]
                 
 def defaultkeys(list_of_keys):
     "Returns a dictionary with default values from a list of keys"
-    #return {key:None for key in list_of_keys} Need Python 2.7!
+    
+    #return {key:None for key in list_of_keys} -- Need Python 2.7!
     defaultdict = {}
     for key in list_of_keys:
         defaultdict[key] = None
@@ -73,17 +74,17 @@ class SongDB:
 
             
     def filter_by_key(self, key, search_term):
+        "Returns a list of song instances that match the search term."
+        
         key = key.lower()
         assert (key in self.keys), "Your key does not exist"
-        
         assert (key in self.keys_as_types(type(search_term))), "Your search term must be of the appropriate type"
-        
         if isinstance(search_term, str): 
             assert (search_term or search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()
                     in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
-        if isinstance(search_term, int): assert search_term in getattr(self, key).keys(), "Your search term was not found. Please check the spelling and try again."
-        
-        # 1. Need to check whether search_term is type int or str, as appropriate
+        if isinstance(search_term, int): 
+            assert search_term in getattr(self, key).keys(), "Your search term was not found. Please check the spelling and try again."
+         
         return (getattr(self, key))[search_term]
         
                
@@ -145,7 +146,7 @@ def buildsongs(filename, xpath_string):
 container = SongDB(filename, 'dict/dict/dict')
 #print container.keys_as_types(filename, 'dict/dict/dict', int)
 
-for instance in container.filter_by_key('Artist', 'Bach'): print instance
+print container.filter_by_key('Artist', 'Bach')
 
 
 
@@ -158,8 +159,8 @@ for instance in container.filter_by_key('Artist', 'Bach'): print instance
                         
 
 
-# 6. Apply sorting algorithm
+# 7. Apply sorting algorithm
 
-# 7. Return top songs
+# 8. Return top songs
 
-# 8. Create a new itunes playlist
+# 9. Create a new itunes playlist
