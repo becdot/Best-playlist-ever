@@ -56,9 +56,8 @@ class SongDB:
         self.songs = [song for song in buildsongs(filename, xpath_string)]
         self.keys = easykeys(get_unique_keys(filename, xpath_string))
         for key in self.keys:
-            setattr(self, key, fill_key_dicts(key, self.songs))  
-            
-            
+            setattr(self, key, self.fill_key_dicts(key, self.songs))             
+                  
     ### Make this function more efficient?
     def keys_as_types(self, str_or_int):
         "Returns a list of keys that have either string or integer values, depending on input"
@@ -71,7 +70,18 @@ class SongDB:
                             for k, v in getattr(self, key).iteritems()
                                for instance in v)
         return [pair[0] for pair in keys_and_types if pair[1] == str_or_int]
-
+        
+    def fill_key_dicts(self, key, song_list):
+        "Takes a key and a list of Song instances and returns {song.key : [Song1, Song2, Song3]}"
+        key_dict = {} # -> e.g. key = artist
+        for song in song_list: # -> for song in ['song1', 'song2', 'song3']
+            if getattr(song, key):
+                if getattr(song, key) not in key_dict: # -> if song.artist(='Bach') not in key_dict
+                    key_dict[getattr(song, key)] = [] # -> key_dict['Bach'] = []
+                    key_dict[getattr(song, key)].append(song) # -> key_dict['Bach'] = [song1]
+                else:
+                    key_dict[getattr(song, key)].append(song)
+        return key_dict
             
     def filter_by_key(self, key, search_term):
         "Returns a list of song instances that match the search term."
@@ -87,20 +97,6 @@ class SongDB:
          
         return (getattr(self, key))[search_term]
         
-               
-                            
-### Add this into the Song DB class, instead of having it be a standalone method?
-def fill_key_dicts(key, song_list):
-    "Takes a key and a list of Song instances and returns {song.key : [Song1, Song2, Song3]}"
-    key_dict = {} # -> e.g. key = artist
-    for song in song_list: # -> for song in ['song1', 'song2', 'song3']
-        if getattr(song, key):
-            if getattr(song, key) not in key_dict: # -> if song.artist(='Bach') not in key_dict
-                key_dict[getattr(song, key)] = [] # -> key_dict['Bach'] = []
-                key_dict[getattr(song, key)].append(song) # -> key_dict['Bach'] = [song1]
-            else:
-                key_dict[getattr(song, key)].append(song)
-    return key_dict
                     
     
 # 5. Create a Song class
@@ -143,12 +139,11 @@ def buildsongs(filename, xpath_string):
     return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
          
 
+# ** Testing **
 container = SongDB(filename, 'dict/dict/dict')
 #print container.keys_as_types(filename, 'dict/dict/dict', int)
 
-print container.filter_by_key('Artist', 'Bach')
-
-
+for instance in container.filter_by_key('Artist', 'Bach'): print instance
 
 #for key in container.keys:
 #    for k, v in getattr(container, key).iteritems():
