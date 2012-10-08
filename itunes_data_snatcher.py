@@ -49,7 +49,7 @@ def defaultkeys(list_of_keys):
 # 4. Create a parent class of Song, SongDB
 
 class SongDB:
-    "Contains a list of Song instances, and provides methods for sorting and filtering by Song attribtes"
+    "Contains a list of Song instances, and provides methods for sorting and filtering by Song attributes"
     
     def __init__(self, filename, xpath_string):
         self.songs = [song for song in buildsongs(filename, xpath_string)]
@@ -61,12 +61,13 @@ class SongDB:
         assert (key.lower() in self.keys), "Your key does not exist"
         if isinstance(search_term, str): assert ((search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()) \
                in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
-        # Need to check whether search_term is type int or str, as appropriate
-        # Need to make sure that when data is imported, integers are imported as strings
+        # 1. Need to check whether search_term is type int or str, as appropriate
+        # 2. Remove unicode support from SongDB
         return (getattr(self, key))[search_term]
         
                
                             
+### Add this into the Song DB class, instead of having it be a standalone method?
 def fill_key_dicts(key, song_list):
     "Takes a key and a list of Song instances and returns {song.key : [Song1, Song2, Song3]}"
     key_dict = {} # -> key = artist
@@ -99,13 +100,18 @@ class Song(SongDB):
 
 def buildsong(xml_song_dict, defaultdict):
     "Returns a python dictionary populated with data from a single xml dictionary, with default values for any missing keys"
+    
     "Also encodes incoming data into unicode, and then decodes it into ascii when returning"
     songdict = {}
     for node in xml_song_dict.xpath('key'):
         text_node = (node.text).encode('ascii', 'ignore')
         if node.getnext().text:
-            next_text_node = (node.getnext().text).encode('ascii', 'ignore')
-        songdict[formatkey(text_node.decode())] = next_text_node.decode()
+            if node.getnext().tag == 'integer':
+                next_text_node = int(node.getnext().text)
+                songdict[formatkey(text_node.encode('ascii', 'ignore'))] = next_text_node
+            else:
+                next_text_node = (node.getnext().text).decode('utf-8')
+                songdict[formatkey(text_node.encode('ascii', 'ignore'))] = next_text_node.encode('ascii', 'ignore')
     return dict(defaultdict.items() + songdict.items())
         
 def buildsongs(filename, xpath_string):
@@ -114,10 +120,14 @@ def buildsongs(filename, xpath_string):
     return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
          
 
-container = SongDB("itunes_sample.xml", 'dict/dict/dict')
+#defaultdict = defaultkeys(easykeys(get_unique_keys('itunes_sample.xml', 'dict/dict/dict')))        
+#list_of_songs = [buildsong(song_dict, defaultdict) for song_dict in xml_dict_generator('itunes_sample.xml', 'dict/dict/dict')]
+#for i in list_of_songs: print i
+
+#container = SongDB("itunes_sample.xml", 'dict/dict/dict')
 
 
-container.filter_by_key('play_count', '5')
+#container.filter_by_key('play_count', '5')
 
 #for key in container.keys:
 #    for k, v in getattr(container, key).iteritems():
