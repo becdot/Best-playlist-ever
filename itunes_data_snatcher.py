@@ -62,7 +62,6 @@ class SongDB:
         if isinstance(search_term, str): assert ((search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()) \
                in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
         # 1. Need to check whether search_term is type int or str, as appropriate
-        # 2. Remove unicode support from SongDB
         return (getattr(self, key))[search_term]
         
                
@@ -70,16 +69,14 @@ class SongDB:
 ### Add this into the Song DB class, instead of having it be a standalone method?
 def fill_key_dicts(key, song_list):
     "Takes a key and a list of Song instances and returns {song.key : [Song1, Song2, Song3]}"
-    key_dict = {} # -> key = artist
+    key_dict = {} # -> e.g. key = artist
     for song in song_list: # -> for song in ['song1', 'song2', 'song3']
         if getattr(song, key):
-            u_songdotkey = getattr(song, key).encode('ascii', 'ignore')
-            songdotkey = u_songdotkey.decode('ascii', 'ignore')
-            if u_songdotkey not in key_dict: # -> if song.artist(='Bach') not in key_dict
-                key_dict[u_songdotkey] = [] # -> key_dict['Bach'] = []
-                key_dict[songdotkey].append(song) # -> key_dict['Bach'] = [song1]
+            if getattr(song, key) not in key_dict: # -> if song.artist(='Bach') not in key_dict
+                key_dict[getattr(song, key)] = [] # -> key_dict['Bach'] = []
+                key_dict[getattr(song, key)].append(song) # -> key_dict['Bach'] = [song1]
             else:
-                key_dict[songdotkey].append(song)
+                key_dict[getattr(song, key)].append(song)
     return key_dict
                     
     
@@ -104,14 +101,17 @@ def buildsong(xml_song_dict, defaultdict):
     "Also encodes incoming data into unicode, and then decodes it into ascii when returning"
     songdict = {}
     for node in xml_song_dict.xpath('key'):
-        text_node = (node.text).encode('ascii', 'ignore')
-        if node.getnext().text:
-            if node.getnext().tag == 'integer':
-                next_text_node = int(node.getnext().text)
-                songdict[formatkey(text_node.encode('ascii', 'ignore'))] = next_text_node
-            else:
-                next_text_node = (node.getnext().text).decode('utf-8')
-                songdict[formatkey(text_node.encode('ascii', 'ignore'))] = next_text_node.encode('ascii', 'ignore')
+        if isinstance(node.text, str): # if the text is not already in unicode
+            text_node = (node.text).decode('utf-8', 'replace') # make it into unicode
+        if node.getnext().text: # if there is a next node
+            if node.getnext().tag == 'integer': # and it is an integer
+                next_text_node = int(node.getnext().text) # store it as an integer
+                songdict[formatkey(text_node.encode('utf-8', 'replace'))] = next_text_node # and add it to the dictionary
+            else: # if the next node is not an integer
+                next_text_node = node.getnext().text # store it as a variable
+                if isinstance(node.getnext().text, str): # unless the text of the following node is not already in unicode
+                    next_text_node = (node.getnext().text).decode('utf-8', 'replace') # make it into unicode
+                songdict[formatkey(text_node.encode('utf-8', 'replace'))] = next_text_node.encode('utf-8', 'replace') # and add it to the dictionary
     return dict(defaultdict.items() + songdict.items())
         
 def buildsongs(filename, xpath_string):
@@ -120,19 +120,19 @@ def buildsongs(filename, xpath_string):
     return (Song(buildsong(song_dict, defaultdict)) for song_dict in xml_dict_generator(filename, xpath_string))
          
 
-#defaultdict = defaultkeys(easykeys(get_unique_keys('itunes_sample.xml', 'dict/dict/dict')))        
-#list_of_songs = [buildsong(song_dict, defaultdict) for song_dict in xml_dict_generator('itunes_sample.xml', 'dict/dict/dict')]
-#for i in list_of_songs: print i
+container = SongDB(filename, 'dict/dict/dict')
 
-#container = SongDB("itunes_sample.xml", 'dict/dict/dict')
+#container.filter_by_key('play_count', 5)
 
-
-#container.filter_by_key('play_count', '5')
-
-#for key in container.keys:
-#    for k, v in getattr(container, key).iteritems():
-#        for instance in v:
-#            print key, 'for', getattr(instance, 'name'), 'is', getattr(instance, key)
+things = []
+for key in container.keys:
+    for k, v in getattr(container, key).iteritems():
+        for instance in v:
+            things.append((key, type(getattr(instance, key))))
+for i in set(things):
+    print i
+            
+strong_keys = ['album', 'skip_date',]
 
 #for value in fill_key_dicts('album', container.songs).values():
 #    for instance in value:
