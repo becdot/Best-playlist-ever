@@ -58,26 +58,31 @@ class SongDB:
             setattr(self, key, fill_key_dicts(key, self.songs))  
             
             
-    def keys_as_types(self, filename, xpath_string, str_or_int):
+    ### Make this function more efficient?
+    def keys_as_types(self, str_or_int):
         "Returns a list of keys that have either string or integer values, depending on input"
         
         "E.g. ['album', 'artist', 'file_location'] -> string values, ['play_count', 'skip_count'] -> int values"
     
         assert (str_or_int == int or str_or_int == str), 'The value must be either str or int'
-        
         keys_and_types = set((key, type(getattr(instance, key)))
                           for key in self.keys
                             for k, v in getattr(self, key).iteritems()
                                for instance in v)
-        return [pair[0] 
-                for pair in keys_and_types
-                if pair[1] == str_or_int]
+        return [pair[0] for pair in keys_and_types if pair[1] == str_or_int]
 
             
     def filter_by_key(self, key, search_term):
-        assert (key.lower() in self.keys), "Your key does not exist"
-        if isinstance(search_term, str): assert ((search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()) \
-               in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
+        key = key.lower()
+        assert (key in self.keys), "Your key does not exist"
+        
+        assert (key in self.keys_as_types(type(search_term))), "Your search term must be of the appropriate type"
+        
+        if isinstance(search_term, str): 
+            assert (search_term or search_term.lower() or search_term.capitalize() or search_term.upper() or search_term.title()
+                    in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
+        if isinstance(search_term, int): assert search_term in getattr(self, key).keys(), "Your search term was not found. Please check the spelling and try again."
+        
         # 1. Need to check whether search_term is type int or str, as appropriate
         return (getattr(self, key))[search_term]
         
@@ -138,9 +143,10 @@ def buildsongs(filename, xpath_string):
          
 
 container = SongDB(filename, 'dict/dict/dict')
-print container.keys_as_types(filename, 'dict/dict/dict', int)
+#print container.keys_as_types(filename, 'dict/dict/dict', int)
 
-#container.filter_by_key('play_count', 5)
+for instance in container.filter_by_key('Artist', 'Bach'): print instance
+
 
 
 #for key in container.keys:
