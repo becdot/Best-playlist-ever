@@ -84,10 +84,19 @@ class SongDB:
                 else:
                     key_dict[getattr(song, key)].append(song)
         return key_dict
-           
         
+    def sort_functions(self, *function):
+        "Takes a variable number of functions, and returns a list of songs for which all functions evaluate as true"
+        
+        for i in range(len(function)):
+            if i == 0:
+                song_matches = [song for song in self.songs if function[i](song)] 
+            else:
+                song_matches = [song for song in song_matches if function[i](song)]
+        return song_matches    
+    
     def match_criteria(self, key, value, input_operator):
-        "Returns a list of song instances that match the given criteria and operator (eg artist == 'Bach' or play_count >= 20)"
+        "Returns a function that checks a key and value against an operator and returns a Boolean (eg artist == 'Bach' or play_count >= 20)"
     
         operator_dict = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '>': operator.gt, '<=': operator.le, '<': operator.lt}
         input_operator = operator_dict[input_operator]
@@ -97,18 +106,18 @@ class SongDB:
         if isinstance(value, str): 
             assert (value in getattr(self, key).keys()), "Your search term was not found. Please check the spelling and try again."
                 
-        def compare_funct(song_inst):
+        def compare(song_inst):
             if input_operator(getattr(song_inst, key), value):
                 return True
             return False
-        return compare_funct
+            
+        return compare
         
                                 
                                 
                                 
                                 
-    def sort_function(self, function):
-        return [song for song in self.songs if function(song)]
+    
         
                 
                                 
@@ -164,8 +173,11 @@ def buildsongs(filename, xpath_string):
 # ** Testing **
 container = SongDB(filename, 'dict/dict/dict')
 
-criteria = container.match_criteria('play_count', 200, '>=')
-for instance in container.sort_function(criteria): print instance
+criteria1 = container.match_criteria('play_count', 150, '>=')
+criteria2 = container.match_criteria('skip_count', 10, '<')
+criteria3 = container.match_criteria('artist', 'Redbird', '==')
+for instance in container.sort_functions(criteria1, criteria2, criteria3): print instance
+#container.sort_functions(criteria1, criteria2)
 
 #for key in container.keys:
 #    for k, v in getattr(container, key).iteritems():
