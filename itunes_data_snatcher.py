@@ -2,6 +2,7 @@ from lxml import etree
 
 import operator
 import datetime
+import random
 # Contains environment-specific information, may comment out
 import environment 
 
@@ -135,7 +136,7 @@ class SongDB:
             
         return compare
          
-# 6. Define custom functions for filtering                        
+# 7. Apply sorting algorithm
 
 def play_density(song):
     "Returns a float of play_count / total_time_elapsed_since_song_was_added_to_itunes_library"
@@ -157,24 +158,55 @@ def format_date_object(song):
     output_date = datetime.datetime.strptime(input_date, "%Y-%m-%dT%H:%M:%SZ")
     
     return output_date
-    
-
-
-# 7. Apply sorting algorithm
 
 # 8. Return top songs
 
+def top_songs(SongDB_instance):
+    "Takes a SongDB instance and returns a list of the top twenty songs"
+    
+    "Songs that have been played in the last month are rated by their total play density (play count / time since added)"
+    
+    now = datetime.datetime.now()
+    one_month_ago  = datetime.datetime.replace(now, month=(now.month - 1))
+    one_month_ago = one_month_ago.date()
+    
+    criteria = SongDB_instance.match_criteria('play_date_utc', str(one_month_ago), '>=')
+    recent_songs = [instance for instance in SongDB_instance.sort_functions(criteria)]
+    recent_densities = [(play_density(instance), instance) for instance in recent_songs]
+    recent_densities.sort()
+    recent_densities.reverse()
+    #for t in recent_densities[:20]: print t[1], 'has a recent play density of', t[0]
+    return [t[1] for t in recent_densities[:20]]
+
+#container = SongDB(filename, xpath_string)
+#for i in top_songs(container): print i
+
 # 9. Create a new itunes playlist
 
+def playlist_keys(xml_file):
+    tree = etree.parse(xml_file)
+    for node in tree.xpath('dict/key/array/dict/key'):
+        print node
+            
+playlist_keys("playlists.xml")
 
-# ** Testing **
-container = SongDB(filename, xpath_string)
+def new_xml_playlist(topsongs):
+    pass
+
+def new_playlist(top_songs, file_to_write):
 
 
-criteria = container.match_criteria('play_date_utc', '2012-10-03', '>=')
-recent_songs = [instance for instance in container.sort_functions(criteria)]
-print len(recent_songs)
-densities = [(play_density(instance), instance, instance.play_date_utc) for instance in recent_songs]
-densities.sort()
-densities.reverse()
-for t in densities[:20]: print t[1], 'has a play density of', t[0]
+	"""\t\t<dict>
+	\t\t<key>Name</key><string>Data Snatcher Playlist</string>
+	\t\t<key>Playlist ID</key><integer>19136</integer>
+	\t\t<key>Playlist Persistent ID</key><string>D3D04F5E9167136D</string>
+	\t\t<key>All Items</key><true/>
+	\t\t<key>Playlist Items</key>
+	\t\t<array>
+		\t\t\t<dict>
+			\t\t\t\t<key>Track ID</key><integer>6911</integer>
+		\t\t\t</dict>
+		\t\t\t<dict>
+			\t\t\t\t<key>Track ID</key><integer>6913</integer>
+		\t\t\t</dict>"""
+
