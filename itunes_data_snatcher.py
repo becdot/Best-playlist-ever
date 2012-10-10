@@ -135,29 +135,36 @@ class SongDB:
             
         return compare
          
-
 # 6. Define custom functions for filtering                        
 
 def play_density(song):
     date_added = format_date_object(song)
     time_elapsed = datetime.datetime.now() - date_added
-    print song.play_count
-    print time_elapsed
-    density = float(song.play_count) / time_elapsed.days
     #print time_elapsed, 'has passed since', song.name, 'was added on', date_added
+    plays = 0.0
+    if song.play_count:
+        plays = float(song.play_count)
+    #print plays
+    density = plays / time_elapsed.days
     #print 'the density of play counts/date added is', density
-    
+        
     return density
     
 
 def format_date_object(song):
     "Takes a song and returns a datetime object (created from song.date_added)"
     
-    input_date = (song.date_added[:10]).split('-')
-    input_time = (song.date_added[11:-1]).split(':')
-    output_date = datetime.datetime(int(input_date[0]), int(input_date[1]), int(input_date[2]), 
-                                   int(input_time[0]), int(input_time[1]), int(input_time[2]))
+    input_date = song.date_added
+    output_date = datetime.datetime.strptime(input_date, "%Y-%m-%dT%H:%M:%SZ")
+    
     return output_date
+
+    
+#    input_date = (song.date_added[:10]).split('-')
+#    input_time = (song.date_added[11:-1]).split(':')
+#    output_date = datetime.datetime(int(input_date[0]), int(input_date[1]), int(input_date[2]), 
+#                                   int(input_time[0]), int(input_time[1]), int(input_time[2]))
+#    return output_date
    
     
 
@@ -170,7 +177,8 @@ def format_date_object(song):
 
 
 # ** Testing **
-container = SongDB(filename, 'dict/dict/dict')
+container = SongDB(filename, xpath_string)
+
 #criteria1 = container.match_criteria('play_count', 150, '>=')
 #criteria2 = container.match_criteria('skip_count', 10, '<')
 #criteria3 = container.match_criteria('artist', 'Redbird', '==')
@@ -181,8 +189,10 @@ container = SongDB(filename, 'dict/dict/dict')
 #genre_pop.reverse()
 #for i in genre_pop: print i[1], i[0]
 #
-#densities = [play_density(instance) for instance in container.songs]
+#criteria = container.match_criteria('play_date_utc', '2012-09-01', '>=')
+#recent_songs = [instance for instance in container.sort_functions(criteria)]
+#for i in recent_songs: print i
+#densities = [(play_density(instance), instance) for instance in recent_songs]
 #densities.sort()
 #densities.reverse()
-#print densities[:20]
-#for instance in container.songs: format_date_object(instance)
+#for t in densities[:20]: print t[1], 'has a play density of', t[0]
