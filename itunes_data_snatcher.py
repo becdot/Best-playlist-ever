@@ -137,10 +137,13 @@ class SongDB:
          
 # 6. Define custom functions for filtering                        
 
-def play_density(song):
-    date_added = format_date_object(song)
-    time_elapsed = datetime.datetime.now() - date_added
-    #print time_elapsed, 'has passed since', song.name, 'was added on', date_added
+def play_density(song, start_date=None, end_date=datetime.datetime.now()):
+    if start_date:
+        date_added = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+    else:
+        date_added = format_date_object(song)
+    time_elapsed = abs(end_date - date_added)
+    print time_elapsed, 'has passed since', song.name, 'was added on', date_added
     plays = 0.0
     if song.play_count:
         plays = float(song.play_count)
@@ -189,10 +192,10 @@ container = SongDB(filename, xpath_string)
 #genre_pop.reverse()
 #for i in genre_pop: print i[1], i[0]
 #
-#criteria = container.match_criteria('play_date_utc', '2012-09-01', '>=')
-#recent_songs = [instance for instance in container.sort_functions(criteria)]
+criteria = container.match_criteria('play_date_utc', '2012-09-01', '>=')
+recent_songs = [instance for instance in container.sort_functions(criteria)]
 #for i in recent_songs: print i
-#densities = [(play_density(instance), instance) for instance in recent_songs]
-#densities.sort()
-#densities.reverse()
-#for t in densities[:20]: print t[1], 'has a play density of', t[0]
+densities = [(play_density(instance), instance, instance.play_date_utc) for instance in recent_songs]
+densities.sort()
+densities.reverse()
+for t in densities[:20]: print t[1], 'has a play density of', t[0]
