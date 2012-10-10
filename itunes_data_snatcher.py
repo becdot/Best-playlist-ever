@@ -178,35 +178,8 @@ def top_songs(SongDB_instance):
     #for t in recent_densities[:20]: print t[1], 'has a recent play density of', t[0]
     return [t[1] for t in recent_densities[:20]]
 
-#container = SongDB(filename, xpath_string)
-#for i in top_songs(container): print i
+container = SongDB(filename, xpath_string)
+for i in top_songs(container): print i
 
 # 9. Create a new itunes playlist
-
-def playlist_keys(xml_file):
-    tree = etree.parse(xml_file)
-    for node in tree.xpath('dict/key/array/dict/key'):
-        print node
-            
-playlist_keys("playlists.xml")
-
-def new_xml_playlist(topsongs):
-    pass
-
-def new_playlist(top_songs, file_to_write):
-
-
-	"""\t\t<dict>
-	\t\t<key>Name</key><string>Data Snatcher Playlist</string>
-	\t\t<key>Playlist ID</key><integer>19136</integer>
-	\t\t<key>Playlist Persistent ID</key><string>D3D04F5E9167136D</string>
-	\t\t<key>All Items</key><true/>
-	\t\t<key>Playlist Items</key>
-	\t\t<array>
-		\t\t\t<dict>
-			\t\t\t\t<key>Track ID</key><integer>6911</integer>
-		\t\t\t</dict>
-		\t\t\t<dict>
-			\t\t\t\t<key>Track ID</key><integer>6913</integer>
-		\t\t\t</dict>"""
 
