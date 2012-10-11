@@ -3,8 +3,8 @@ from lxml import etree
 import operator
 import datetime
 import random
-# Contains environment-specific information, may comment out
-import environment 
+
+import environment # Contains environment-specific information, may comment out
 
 # 1. Find itunes data
 username = environment.username  # Change this to reflect your username!
@@ -175,11 +175,7 @@ def top_songs(SongDB_instance):
     recent_densities = [(play_density(instance), instance) for instance in recent_songs]
     recent_densities.sort()
     recent_densities.reverse()
-    #for t in recent_densities[:20]: print t[1], 'has a recent play density of', t[0]
     return [t[1] for t in recent_densities[:20]]
 
 container = SongDB(filename, xpath_string)
 for i in top_songs(container): print i
-
-# 9. Create a new itunes playlist
-
